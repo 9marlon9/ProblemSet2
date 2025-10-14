@@ -169,22 +169,92 @@ test_personas <- test_personas[, variables_finales]
 
 # 1. Datos - Análisis variables Personas===============
 # Arreglos
-train_personas <- train_personas |> 
-  mutate(
-    Sexo = ifelse(Sexo == 2, 1, 0),                    # Mujer=1, Hombre=0
-    Jefe_hogar = ifelse(Jefe_hogar == 1, 1, 0),        # 1=Jefe, 0=No jefe
-    Edad = ifelse(Edad <= 6, 1, 0),                    # 1=Menor de 6, 0=Mayor
-    Nivel_educ = ifelse(Nivel_educ == 9, 0, Nivel_educ), # 9→0, otros igual
-    Oc = ifelse(is.na(Oc), 0, 1)                       # 1=Ocupado, 0=No ocupado
-  )
+
+pre_process_personas <- function(data) {
+  data <- data |> 
+    mutate(
+      Sexo = ifelse(Sexo == 2, 1, 0),
+      Jefe_hogar = ifelse(Jefe_hogar == 1, 1, 0),
+      Niños = ifelse(Edad <= 6, 1, 0),
+      Nivel_educ = ifelse(Nivel_educ == 9, 0, Nivel_educ),
+      Oc = ifelse(is.na(Oc), 0, 1),
+      Ina = ifelse(is.na(Ina), 0, 1)                        # 1=Inactivo, 0=Activo (NA→0)
+    )
+  return(data)
+}
+
+train_personas <- pre_process_personas(train_personas)
+test_personas <- pre_process_personas(test_personas)
+
+table(train_personas$Niños)
+
+#Variables de persona agregadas por hogar
+
+train_personas_nivel_hogar <- train_personas |> 
+  group_by(id) |>
+  summarize(num_women    = sum(Sexo, na.rm = TRUE),
+            num_minors   = sum(Niños, na.rm = TRUE),
+            cat_maxEduc  = max(Nivel_educ, na.rm = TRUE),
+            num_occupied = sum(Oc, na.rm = TRUE)) |> 
+  ungroup()
+
+
+table(train_personas_nivel_hogar$num_minors)
+##Variables por jefe del hogar:
+
+
+train_personas_hogar <- train_personas |> 
+  filter(Jefe_hogar == 1) |>
+  select(id, Sexo, Nivel_educ, Oc) |>
+  rename(bin_headWoman = Sexo,
+         bin_occupiedHead = Oc) |>
+  left_join(train_personas_nivel_hogar)
+
+
+test_personas_nivel_hogar<- train_personas |> 
+  group_by(id) |>
+  summarize(num_women    = sum(Sexo, na.rm = TRUE),
+            num_minors   = sum(Niños, na.rm = TRUE),
+            cat_maxEduc  = max(Nivel_educ, na.rm = TRUE),
+            num_occupied = sum(Oc, na.rm = TRUE)) |> 
+  ungroup()
+
+
+test_personas_hogar<- train_personas |> 
+  filter(Jefe_hogar == 1) |>
+  select(id, Sexo, Nivel_educ, Oc) |>
+  rename(bin_headWoman = Sexo,
+         bin_occupiedHead = Oc) |>
+  left_join(train_personas_nivel_hogar)
+
+
+
+# 1) Agregar desde train_personas (versión para train)
+personas_agg <- train_personas %>%
+  group_by(id) %>%
+  summarise(
+    n_personas = n(),                                         # tamaño del hogar (nº de registros/personas)
+    prop_mujeres = mean(Sexo, na.rm = TRUE),                  # proporción de personas con Sexo==1 (mujer)
+    prop_ocupados = mean(Oc, na.rm = TRUE),                   # proporción ocupados (Oc==1)
+    prop_inactivos = mean(Ina, na.rm = TRUE),                 # proporción inactivos (si tienes Ina)
+    #prop_cot_pension = mean(Cot_pension, na.rm = TRUE),       # proporción que cotiza pensión
+    #prom_hrs_sem = mean(Hras_sem_trab, na.rm = TRUE),         # promedio horas trabajadas semanales
+    #med_ing_pers = median(Ing_no_lab_12m, na.rm = TRUE)       # ejemplo: ingreso no laboral mediano por persona
+  ) %>%
+  ungroup()
+
 
 
 
 # 2. Datos - Análisis variables Hogares =============
 
 
-
 ## Pobre
-table(train_hogares$Pobre)
+table(train_personas$Jefe_hogar)
 prop.table(table(train_hogares$Pobre)) * 100
+
+
+
+
+
 
