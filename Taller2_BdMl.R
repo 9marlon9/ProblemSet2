@@ -3,7 +3,7 @@
 # 0.Cargar datos  =========
 install.packages("pacman")
 library(pacman)
-p_load(readr,tidyverse,googledrive, skimr, naniar, dplyr)
+p_load(readr,tidyverse,googledrive, skimr, naniar, dplyr, caret, themis, recipes)
 
 drive_auth()
 
@@ -165,8 +165,6 @@ train_personas <- train_personas[, variables_finales]
 test_personas <- test_personas[, variables_finales]
 
 
-
-
 # 1. Datos - Análisis variables Personas===============
 # Arreglos
 
@@ -178,7 +176,7 @@ pre_process_personas <- function(data) {
       Niños = ifelse(Edad <= 6, 1, 0),
       Nivel_educ = ifelse(Nivel_educ == 9, 0, Nivel_educ),
       Oc = ifelse(is.na(Oc), 0, 1),
-      Ina = ifelse(is.na(Ina), 0, 1)                        # 1=Inactivo, 0=Activo (NA→0)
+      Ina = ifelse(is.na(Ina), 0, 1) # 1=Inactivo, 0=Activo (NA→0)
     )
   return(data)
 }
@@ -186,11 +184,9 @@ pre_process_personas <- function(data) {
 train_personas <- pre_process_personas(train_personas)
 test_personas <- pre_process_personas(test_personas)
 
-table(train_personas$Niños)
+#Variables de persona agregadas por hogar TRAIN
 
-#Variables de persona agregadas por hogar
-
-train_personas_nivel_hogar <- train_personas |> 
+TR_personas_nivel_hogar <- train_personas |> 
   group_by(id) |>
   summarize(num_women    = sum(Sexo, na.rm = TRUE),
             num_minors   = sum(Niños, na.rm = TRUE),
@@ -198,20 +194,17 @@ train_personas_nivel_hogar <- train_personas |>
             num_occupied = sum(Oc, na.rm = TRUE)) |> 
   ungroup()
 
-
-table(train_personas_nivel_hogar$num_minors)
-##Variables por jefe del hogar:
-
-
-train_personas_hogar <- train_personas |> 
+##Variables por jefe del hogar Train:
+TR_personas_nivel_hogar <- train_personas |> 
   filter(Jefe_hogar == 1) |>
   select(id, Sexo, Nivel_educ, Oc) |>
   rename(bin_headWoman = Sexo,
          bin_occupiedHead = Oc) |>
-  left_join(train_personas_nivel_hogar)
+  left_join(TR_personas_nivel_hogar)
 
+#Variables de persona agregadas por hogar TEST
 
-test_personas_nivel_hogar<- train_personas |> 
+TE_personas_nivel_hogar<- test_personas |> 
   group_by(id) |>
   summarize(num_women    = sum(Sexo, na.rm = TRUE),
             num_minors   = sum(Niños, na.rm = TRUE),
@@ -219,42 +212,93 @@ test_personas_nivel_hogar<- train_personas |>
             num_occupied = sum(Oc, na.rm = TRUE)) |> 
   ungroup()
 
-
-test_personas_hogar<- train_personas |> 
+##Variables por jefe del hogar Test:
+TE_personas_nivel_hogar <- test_personas |> 
   filter(Jefe_hogar == 1) |>
   select(id, Sexo, Nivel_educ, Oc) |>
   rename(bin_headWoman = Sexo,
          bin_occupiedHead = Oc) |>
-  left_join(train_personas_nivel_hogar)
+  left_join(TE_personas_nivel_hogar)
+
+
+#Arreglos a nivel hogar:
+
+train_hogares <- train_hogares |>
+  mutate(
+    bin_rent = ifelse(tiene_vivienda == 3, 1, 0),
+    prop_cuartos = n_cuartos / Nper,
+    prop_cuartos_dormir = cuartos_dormir / Nper
+  ) |>
+  select(id, tiene_vivienda, Pobre, n_cuartos, cuartos_dormir, Nper, 
+         prop_cuartos, prop_cuartos_dormir, bin_rent)
 
 
 
-# 1) Agregar desde train_personas (versión para train)
-personas_agg <- train_personas %>%
-  group_by(id) %>%
-  summarise(
-    n_personas = n(),                                         # tamaño del hogar (nº de registros/personas)
-    prop_mujeres = mean(Sexo, na.rm = TRUE),                  # proporción de personas con Sexo==1 (mujer)
-    prop_ocupados = mean(Oc, na.rm = TRUE),                   # proporción ocupados (Oc==1)
-    prop_inactivos = mean(Ina, na.rm = TRUE),                 # proporción inactivos (si tienes Ina)
-    #prop_cot_pension = mean(Cot_pension, na.rm = TRUE),       # proporción que cotiza pensión
-    #prom_hrs_sem = mean(Hras_sem_trab, na.rm = TRUE),         # promedio horas trabajadas semanales
-    #med_ing_pers = median(Ing_no_lab_12m, na.rm = TRUE)       # ejemplo: ingreso no laboral mediano por persona
-  ) %>%
-  ungroup()
+test_hogares <- test_hogares |>
+  mutate(
+    bin_rent = ifelse(tiene_vivienda == 3, 1, 0),
+    prop_cuartos = n_cuartos / Nper,
+    prop_cuartos_dormir = cuartos_dormir / Nper
+  ) |>
+  select(id, tiene_vivienda, n_cuartos, cuartos_dormir, Nper, 
+         prop_cuartos, prop_cuartos_dormir, bin_rent)
 
 
+train <- train_hogares |> 
+  left_join(TR_personas_nivel_hogar) |>
+  select(-id) # Ya no necesitamos el identificador.
+
+train <- train |> 
+  mutate(Pobre   = factor(Pobre,levels=c(0,1),labels=c("No","Yes"))
+         )
+
+test <- test_hogares |> 
+  left_join(TE_personas_nivel_hogar) |>
+  select(-id) # Ya no necesitamos el identificador.
 
 
 # 2. Datos - Análisis variables Hogares =============
 
 
-## Pobre
-table(train_personas$Jefe_hogar)
-prop.table(table(train_hogares$Pobre)) * 100
+# 3. Modelo sin balanceo de muestras =================
+ctrl <- trainControl(
+  method = "cv",
+  number = 3,
+  classProbs = TRUE,
+  savePredictions = TRUE
+)
 
+set.seed(2025)
 
+model_rf <- train(
+  Pobre ~ .,
+  data = train,
+  method = "rf",
+  trControl = ctrl,
+  metric = "Accuracy",
+  tuneGrid = expand.grid(mtry = c(3, 5, 7))  # Número de variables por split
+)
 
+# 3. Modelo con balanceo de muestras =================
 
+# Aplicar SMOTE con themis
+train_balanced <- recipe(Pobre ~ ., data = train) %>%
+  step_smote(Pobre, over_ratio = 0.5) %>%  # Balancea a 50/50
+  prep() %>%
+  bake(new_data = NULL)
 
+# Verificar el nuevo balance
+table(train_balanced$Pobre)
+table(train$Pobre)
+
+set.seed(2025)
+
+model_rf1 <- train(
+  Pobre ~ .,
+  data = train_balanced,
+  method = "rf",
+  trControl = ctrl,
+  metric = "Accuracy",
+  tuneGrid = expand.grid(mtry = c(3, 5, 7))  # Número de variables por split
+)
 
