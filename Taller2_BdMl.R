@@ -165,9 +165,14 @@ train_personas <- train_personas[, variables_finales]
 test_personas <- test_personas[, variables_finales]
 
 
-# 1. Datos - Análisis variables Personas===============
+table(train_personas$Cot_pension)
+
+
+
+# 1. Datos - Análisis variables Personas/Hogares===============
 # Arreglos
 
+# Modificar la función pre_process_personas para recodificar Cot_pension
 pre_process_personas <- function(data) {
   data <- data |> 
     mutate(
@@ -176,22 +181,37 @@ pre_process_personas <- function(data) {
       Niños = ifelse(Edad <= 6, 1, 0),
       Nivel_educ = ifelse(Nivel_educ == 9, 0, Nivel_educ),
       Oc = ifelse(is.na(Oc), 0, 1),
-      Ina = ifelse(is.na(Ina), 0, 1) # 1=Inactivo, 0=Activo (NA→0)
+      Ina = ifelse(is.na(Ina), 0, 1), # 1=Inactivo, 0=Activo (NA→0)
+      # Nueva recodificación para Cot_pension
+      Cot_pension = case_when(
+        Cot_pension == 1 ~ 1,  # Sí cotiza
+        Cot_pension == 3 ~ 1,  # Ya pensionado, lo tratamos como 1
+        Cot_pension == 2 ~ 0,  # No cotiza
+        TRUE ~ 0  # Cualquier otro caso (NA, etc.) → 0
+      )
     )
   return(data)
 }
 
+# Aplicar el preprocesamiento actualizado
 train_personas <- pre_process_personas(train_personas)
 test_personas <- pre_process_personas(test_personas)
+
+
 
 #Variables de persona agregadas por hogar TRAIN
 
 TR_personas_nivel_hogar <- train_personas |> 
   group_by(id) |>
-  summarize(num_women    = sum(Sexo, na.rm = TRUE),
-            num_minors   = sum(Niños, na.rm = TRUE),
-            cat_maxEduc  = max(Nivel_educ, na.rm = TRUE),
-            num_occupied = sum(Oc, na.rm = TRUE)) |> 
+  summarize(
+    num_women    = sum(Sexo, na.rm = TRUE),
+    num_minors   = sum(Niños, na.rm = TRUE),
+    cat_maxEduc  = max(Nivel_educ, na.rm = TRUE),
+    num_occupied = sum(Oc, na.rm = TRUE),
+    # NUEVAS VARIABLES:
+    num_inactivos = sum(Ina, na.rm = TRUE),  # Total de inactivos
+    num_cotizantes = sum(Cot_pension, na.rm = TRUE)  # Total que cotizan/pensionados
+  ) |> 
   ungroup()
 
 ##Variables por jefe del hogar Train:
@@ -204,12 +224,17 @@ TR_personas_nivel_hogar <- train_personas |>
 
 #Variables de persona agregadas por hogar TEST
 
-TE_personas_nivel_hogar<- test_personas |> 
+TE_personas_nivel_hogar <- test_personas |> 
   group_by(id) |>
-  summarize(num_women    = sum(Sexo, na.rm = TRUE),
-            num_minors   = sum(Niños, na.rm = TRUE),
-            cat_maxEduc  = max(Nivel_educ, na.rm = TRUE),
-            num_occupied = sum(Oc, na.rm = TRUE)) |> 
+  summarize(
+    num_women    = sum(Sexo, na.rm = TRUE),
+    num_minors   = sum(Niños, na.rm = TRUE),
+    cat_maxEduc  = max(Nivel_educ, na.rm = TRUE),
+    num_occupied = sum(Oc, na.rm = TRUE),
+    # NUEVAS VARIABLES:
+    num_inactivos = sum(Ina, na.rm = TRUE),  # Total de inactivos
+    num_cotizantes = sum(Cot_pension, na.rm = TRUE)  # Total que cotizan/pensionados
+  ) |> 
   ungroup()
 
 ##Variables por jefe del hogar Test:
@@ -233,7 +258,6 @@ train_hogares <- train_hogares |>
          prop_cuartos, prop_cuartos_dormir, bin_rent)
 
 
-
 test_hogares <- test_hogares |>
   mutate(
     bin_rent = ifelse(tiene_vivienda == 3, 1, 0),
@@ -244,23 +268,38 @@ test_hogares <- test_hogares |>
          prop_cuartos, prop_cuartos_dormir, bin_rent)
 
 
+# Crear las variables de proporción en la unión con hogares:
+
 train <- train_hogares |> 
   left_join(TR_personas_nivel_hogar) |>
-  select(-id) # Ya no necesitamos el identificador.
+  mutate(
+    # NUEVAS PROPORCIONES:
+    prop_inactivos = num_inactivos / Nper,  # Proporción de inactivos en el hogar
+    prop_cotizantes = num_cotizantes / Nper  # Proporción que cotiza pensión
+  ) |>
+  select(-id) # Solo eliminar en train
+
 
 train <- train |> 
-  mutate(Pobre   = factor(Pobre,levels=c(0,1),labels=c("No","Yes"))
+  mutate(Pobre   = factor(Pobre,levels=c(0,1))
          )
 
 test <- test_hogares |> 
   left_join(TE_personas_nivel_hogar) |>
-  select(-id) # Ya no necesitamos el identificador.
+  mutate(
+    # NUEVAS PROPORCIONES:
+    prop_inactivos = num_inactivos / Nper,  # Proporción de inactivos en el hogar
+    prop_cotizantes = num_cotizantes / Nper  # Proporción que cotiza pensión
+  )
 
+train <- train |> 
+  mutate(prop_ocupados = num_occupied / Nper)
 
-# 2. Datos - Análisis variables Hogares =============
-
+test <- test |> 
+  mutate(prop_ocupados = num_occupied / Nper)
 
 # 3. Modelo sin balanceo de muestras =================
+
 ctrl <- trainControl(
   method = "cv",
   number = 3,
@@ -279,7 +318,7 @@ model_rf <- train(
   tuneGrid = expand.grid(mtry = c(3, 5, 7))  # Número de variables por split
 )
 
-# 3. Modelo con balanceo de muestras =================
+# 3.1 Modelo con balanceo de muestras SMOTE =================
 
 # Aplicar SMOTE con themis
 train_balanced <- recipe(Pobre ~ ., data = train) %>%
@@ -301,4 +340,69 @@ model_rf1 <- train(
   metric = "Accuracy",
   tuneGrid = expand.grid(mtry = c(3, 5, 7))  # Número de variables por split
 )
+
+
+
+# 3.2 Modelo con balanceo de muestras Down-Sampling =================
+# Definir función F1 para la CV INTERNA
+
+f1_summary <- function(data, lev = NULL, model = NULL) {
+  confusion <- caret::confusionMatrix(data$pred, data$obs)
+  sensitivity <- confusion$byClass["Sensitivity"]
+  precision <- confusion$byClass["Pos Pred Value"]
+  f1 <- 2 * (precision * sensitivity) / (precision + sensitivity)
+  
+  c(F1 = f1,
+    Sensibilidad = sensitivity,
+    Precision = precision,
+    Accuracy = confusion$overall["Accuracy"])
+}
+
+# Configurar control con F1 para CV
+# Configuración SUPER rápida
+ctrl_fast <- trainControl(
+  method = "cv",
+  number = 3,                    # Solo 3 folds (más rápido)
+  classProbs = FALSE,
+  savePredictions = FALSE,       # No guarden las predicciones para que les corra
+                                 # Más rápido 
+  sampling = "down",
+  summaryFunction = f1_summary,
+  verboseIter = FALSE           # Esto hace que se demore menos
+)
+
+set.seed(2025)
+
+model_rf_fast <- train(
+  Pobre ~ .,
+  data = train,
+  method = "rf",
+  trControl = ctrl_fast,
+  metric = "F1",
+  tuneGrid = expand.grid(mtry = c(3, 5)), 
+  ntree = 100,                   
+  importance = FALSE,            
+  do.trace = FALSE             
+)
+
+
+#Predicciones:
+
+predicciones_test <- predict(model_rf_fast, newdata = test)
+
+# Submission
+submission <- data.frame(
+  id = test$id,
+  poverty = as.numeric(predicciones_test) - 1  
+)
+
+ruta_descargas <- "C:/Users/Marlon Angulo/Downloads"
+
+best_mtry <- model_rf_fast$bestTune$mtry
+nombre_archivo <- paste0("RF_mtry_", best_mtry, "_ntree_100_sampling_down.csv")
+ruta_completa <- file.path(ruta_descargas, nombre_archivo)
+
+
+# Guardar el submission
+write.csv(submission, ruta_completa, row.names = FALSE)
 
