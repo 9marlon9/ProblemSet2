@@ -117,52 +117,52 @@ names(train_personas)[names(train_personas) %in% names(diccionario_personas)] <-
   diccionario_personas[names(train_personas)[names(train_personas) %in% names(diccionario_personas)]]
 
 #Variables irrelevantes
-vars_a_eliminar <- c(
-  "P6500", "P6510s1", "P6510s2", "P6545s1", "P6545s2",
-  "P6580s1", "P6580s2", "P6585s1a1", "P6585s1a2", "P6585s2a1",
-  "P6585s2a2", "P6585s3a1", "P6585s3a2", "P6585s4a1", "P6585s4a2",
-  "P6590s1", "P6600s1", "P6610s1", "P6620s1", "P6630s1a1",
-  "P6630s2a1", "P6630s3a1", "P6630s4a1", "P6630s6a1", "P6750",
-  "P6760", "P550", "P7070", "P7140s1", "P7140s2", "P7422s1", "P7472s1", 
-  "P7500s1", "P7500s1a1","P7500s2a1", "P7500s3a1", "P7510s1a1", 
-  "P7510s2a1", "P7510s3a1","P7510s5a1", "P7510s6a1", "P7510s7a1",
-  "Cclasnr2", "Cclasnr3", "Cclasnr4", "Cclasnr5", "Cclasnr6", "Cclasnr7", "Cclasnr8", "Cclasnr11"
-)
+#vars_a_eliminar <- c(
+  #"P6500", "P6510s1", "P6510s2", "P6545s1", "P6545s2",
+  #"P6580s1", "P6580s2", "P6585s1a1", "P6585s1a2", "P6585s2a1",
+  #"P6585s2a2", "P6585s3a1", "P6585s3a2", "P6585s4a1", "P6585s4a2",
+  #"P6590s1", "P6600s1", "P6610s1", "P6620s1", "P6630s1a1",
+  #"P6630s2a1", "P6630s3a1", "P6630s4a1", "P6630s6a1", "P6750",
+  #"P6760", "P550", "P7070", "P7140s1", "P7140s2", "P7422s1", "P7472s1", 
+  #"P7500s1", "P7500s1a1","P7500s2a1", "P7500s3a1", "P7510s1a1", 
+  #"P7510s2a1", "P7510s3a1","P7510s5a1", "P7510s6a1", "P7510s7a1",
+  #"Cclasnr2", "Cclasnr3", "Cclasnr4", "Cclasnr5", "Cclasnr6", "Cclasnr7", "Cclasnr8", "Cclasnr11"
+#)
 
-train_personas <- train_personas %>% 
-  select(-all_of(vars_a_eliminar))
+#train_personas <- train_personas %>% 
+  #select(-all_of(vars_a_eliminar))
 
 
-variables_finales <- c(
-  # CLAVES PARA UNIR BASES
-  "id", "Orden", "Clase", "Dominio", "Fex_c", "Depto", "Fex_dpto",
-  
-  # VARIABLES PREDICTORAS (solo las que están en AMBOS)
-  "Oc",                  # Ocupado
-  "Nivel_educ",          # Nivel educativo
-  "Edad",                # Edad
-  "Pos_tra_pri",         # Posición ocupacional
-  "Cot_pension",         # Cotiza a pensiones
-  "SS_salud",            # Afiliación salud
-  "Hras_sem_trab",       # Horas trabajadas
-  "Jefe_hogar",          # Parentesco
-  "Act_principal_SP",    # Actividad principal
-  "T_Tra_Emp",           # Tiempo en empresa
-  "Ing_HE",              # Ingreso horas extras
-  "Sub_Trans",           # Subsidio transporte
-  "Pet",                 # Población edad trabajar
-  "Ina",                 # Inactivo
-  "Tam_empresa",         # Tamaño empresa
-  "Régimen_SS_salud",    # Régimen salud
-  "Grado_aprobado",      # Grado aprobado
-  "Sexo",                # Sexo
-  "Des"                  # Desocupado (agregamos para completar)
-)
+# #variables_finales <- c(
+#   # CLAVES PARA UNIR BASES
+#   "id", "Orden", "Clase", "Dominio", "Fex_c", "Depto", "Fex_dpto",
+#   
+#   # VARIABLES PREDICTORAS (solo las que están en AMBOS)
+#   "Oc",                  # Ocupado
+#   "Nivel_educ",          # Nivel educativo
+#   "Edad",                # Edad
+#   "Pos_tra_pri",         # Posición ocupacional
+#   "Cot_pension",         # Cotiza a pensiones
+#   "SS_salud",            # Afiliación salud
+#   "Hras_sem_trab",       # Horas trabajadas
+#   "Jefe_hogar",          # Parentesco
+#   "Act_principal_SP",    # Actividad principal
+#   "T_Tra_Emp",           # Tiempo en empresa
+#   "Ing_HE",              # Ingreso horas extras
+#   "Sub_Trans",           # Subsidio transporte
+#   "Pet",                 # Población edad trabajar
+#   "Ina",                 # Inactivo
+#   "Tam_empresa",         # Tamaño empresa
+#   "Régimen_SS_salud",    # Régimen salud
+#   "Grado_aprobado",      # Grado aprobado
+#   "Sexo",                # Sexo
+#   "Des"                  # Desocupado (agregamos para completar)
+# )
 
 # Para train_personas
-train_personas <- train_personas[, variables_finales]
+#train_personas <- train_personas[, variables_finales]
 # Para test_personas (mismas variables)
-test_personas <- test_personas[, variables_finales]
+#test_personas <- test_personas[, variables_finales]
 
 
 table(train_personas$Cot_pension)
@@ -806,7 +806,7 @@ model_xgb <- train(
 probabilidades <- predict(model_xgb, train, type = "prob")
 
 # Aplicar custom threshold
-threshold_bajo <- 0.3
+threshold_bajo <- 0.33
 predicciones_custom <- ifelse(probabilidades$Pobre > threshold_bajo, "Pobre", "NoPobre")
 predicciones_custom <- factor(predicciones_custom, levels = c("NoPobre", "Pobre"))
 
@@ -815,11 +815,44 @@ confusion_custom <- confusionMatrix(predicciones_custom, train$Pobre)
 print(confusion_custom)
 
 
+
+
+
+
+
+# CALCULAR F1 PARA EL MODELO ANTERIOR (que da 0.65 en test)
+TP_old <- confusion_custom$table[2, 2]  # Pobre predicho como Pobre
+FP_old <- confusion_custom$table[2, 1]  # NoPobre predicho como Pobre  
+FN_old <- confusion_custom$table[1, 2]  # Pobre predicho como NoPobre
+
+precision_old <- TP_old / (TP_old + FP_old)
+recall_old <- TP_old / (TP_old + FN_old)
+f1_old <- 2 * (precision_old * recall_old) / (precision_old + recall_old)
+
+cat("🔍 MODELO ANTERIOR (que da 0.65 en Kaggle):\n")
+cat("- True Positives:", TP_old, "\n")
+cat("- False Positives:", FP_old, "\n") 
+cat("- False Negatives:", FN_old, "\n")
+cat("- Precision Pobre:", round(precision_old, 4), "\n")
+cat("- Recall Pobre:", round(recall_old, 4), "\n")
+cat("- F1 Train:", round(f1_old, 4), "\n")
+cat("- F1 Kaggle: 0.65\n")
+cat("- Overfitting:", round(f1_old - 0.65, 4), "\n")
+
+
+
+
+
+
+
+
+
+
 # Obtener probabilidades del modelo original
 probabilidades <- predict(model_xgb, test, type = "prob")
 
 # Aplicar custom threshold
-threshold_bajo <- 0.3
+threshold_bajo <- 0.33
 predicciones_custom <- ifelse(probabilidades$Pobre > threshold_bajo, "Pobre", "NoPobre")
 
 
@@ -837,6 +870,113 @@ ruta_completa <- file.path(ruta_descargas, nombre_archivo)
 
 # Guardar el submission
 write.csv(submission_xgb, ruta_completa, row.names = FALSE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1342,332 +1482,418 @@ print(best_params)
 
 
 
-# Modelo Optimizado  ========
-# MODELO 1: COMPETITIVO REGULARIZADO
-# MODELO 1: COMPETITIVO REGULARIZADO (VERSIÓN RÁPIDA)
+# Modelo Optimizado 0.70 ========
+# ENRIQUECIMIENTO MASIVO DE VARIABLES DESDE DATOS ORIGINALES
 
+cat("🚀 AGREGANDO 50+ VARIABLES NUEVAS DESDE DATOS ORIGINALES\n")
 
-# 1. CONFIGURACIÓN OPTIMIZADA DE VALIDACIÓN
-ctrl_competitive <- trainControl(
-  method = "cv",           # ✅ En lugar de repeatedcv
-  number = 7,              # ✅ En lugar de 10 (suficiente)
-  classProbs = TRUE,
-  summaryFunction = twoClassSummary,
-  verboseIter = TRUE,
-  savePredictions = "final"
-)
+# 1. AGREGAR MÁS VARIABLES DE PERSONAS A NIVEL HOGAR
+train_personas_enriched <- train_personas |> 
+  group_by(id) |>
+  summarize(
+    # ===== VARIABLES BÁSICAS MEJORADAS 
+    edad_promedio = mean(Edad, na.rm = TRUE),
+    edad_maxima = max(Edad, na.rm = TRUE),
+    edad_minima = min(Edad, na.rm = TRUE),
+    rango_edad = max(Edad, na.rm = TRUE) - min(Edad, na.rm = TRUE),
+    
+    # ===== VARIABLES DE EMPLEO DETALLADAS 
+    total_horas_trabajo = sum(Hras_sem_trab, na.rm = TRUE),
+    horas_promedio_trabajo = mean(Hras_sem_trab, na.rm = TRUE),
+    num_trabajadores_tiempo_completo = sum(Hras_sem_trab >= 40, na.rm = TRUE),
+    num_trabajadores_medio_tiempo = sum(Hras_sem_trab >= 20 & Hras_sem_trab < 40, na.rm = TRUE),
+    
+    # ===== VARIABLES DE TIPO DE EMPLEO 
+    num_empleados_formales = sum(Pos_tra_pri == 3 & Cot_pension == 1, na.rm = TRUE),
+    num_empleados_informales = sum(Pos_tra_pri == 3 & Cot_pension == 0, na.rm = TRUE),
+    num_independientes = sum(Pos_tra_pri == 4, na.rm = TRUE),
+    num_patrones = sum(Pos_tra_pri == 1, na.rm = TRUE),
+    num_trabajadores_domesticos = sum(Pos_tra_pri == 5, na.rm = TRUE),
+    
+    # ===== VARIABLES DE EDUCACIÓN DETALLADAS 
+    promedio_educacion = mean(Nivel_educ, na.rm = TRUE),
+    max_educacion = max(Nivel_educ, na.rm = TRUE),
+    num_sin_educacion = sum(Nivel_educ == 0, na.rm = TRUE),
+    num_educacion_basica = sum(Nivel_educ %in% c(1, 2, 3), na.rm = TRUE),
+    num_educacion_media = sum(Nivel_educ %in% c(4, 5), na.rm = TRUE),
+    num_educacion_superior = sum(Nivel_educ %in% c(6, 7, 8, 9), na.rm = TRUE),
+    
+    # ===== VARIABLES DE SEGURIDAD SOCIAL 
+    num_salud_subsidiado = sum(Régimen_SS_salud == 2, na.rm = TRUE),
+    num_salud_contributivo = sum(Régimen_SS_salud == 1, na.rm = TRUE),
+    num_salud_especial = sum(Régimen_SS_salud == 3, na.rm = TRUE),
+    num_sin_salud = sum(is.na(Régimen_SS_salud) | Régimen_SS_salud == 0, na.rm = TRUE),
+    
+    # ===== VARIABLES DE BÚSQUEDA DE EMPLEO 
+    num_buscando_trabajo = sum(Des == 1, na.rm = TRUE),
+    num_disponibles_trabajar = sum(Disp_mas_horas == 1, na.rm = TRUE),
+    num_quieren_mas_horas = sum(Quiere_mas_horas == 1, na.rm = TRUE),
+    
+    # ===== VARIABLES DE SUBSIDIOS 
+    num_recibe_subsidio_transporte = sum(Sub_Trans == 1, na.rm = TRUE),
+    num_recibe_subsidio_familiar = sum(Sub_Fam == 1, na.rm = TRUE),
+    num_recibe_subsidio_educativo = sum(Sub_Edu == 1, na.rm = TRUE),
+    
+    # ===== VARIABLES DE INGRESOS (indicadores binarios) 
+    num_ingreso_horas_extra = sum(Ing_HE > 0, na.rm = TRUE),
+    num_ingreso_bonificaciones = sum(Ing_Bon > 0, na.rm = TRUE),
+    num_ingreso_primas = sum(Ing_Pr > 0, na.rm = TRUE),
+    
+    # ===== VARIABLES DE ESTABILIDAD LABORAL 
+    promedio_tiempo_empresa = mean(T_Tra_Emp, na.rm = TRUE),
+    max_tiempo_empresa = max(T_Tra_Emp, na.rm = TRUE),
+    num_empleados_estables = sum(T_Tra_Emp > 12, na.rm = TRUE), # +1 año en empresa
+    
+    # ===== VARIABLES DE TAMAÑO EMPRESA ===
+    num_empresas_grandes = sum(Tam_empresa %in% c(4, 5), na.rm = TRUE),
+    num_empresas_pequenas = sum(Tam_empresa %in% c(1, 2), na.rm = TRUE),
+    
+    # ===== VARIABLES DE ACTIVIDAD ECONÓMICA ===
+    num_agricultura = sum(Act_principal_SP == 1, na.rm = TRUE),
+    num_industria = sum(Act_principal_SP == 2, na.rm = TRUE),
+    num_servicios = sum(Act_principal_SP %in% c(3, 4, 5, 6), na.rm = TRUE),
+    
+    # ===== VARIABLES DE JEFATURA Y GÉNERO ===
+    edad_jefe_hogar = first(Edad[Jefe_hogar == 1]),
+    educacion_jefe = first(Nivel_educ[Jefe_hogar == 1]),
+    sexo_jefe = first(Sexo[Jefe_hogar == 1]),
+    ocupacion_jefe = first(Oc[Jefe_hogar == 1])
+  ) |>
+  ungroup()
 
-# 2. GRID OPTIMIZADO - Misma filosofía, menos combinaciones
-grid_competitive <- expand.grid(
-  nrounds = c(100, 150, 200),    # ✅ 3 puntos en lugar de 2
-  max_depth = c(3, 4),           # ✅ Mantenemos
-  eta = c(0.05, 0.1),            # ✅ Valores más prácticos
-  gamma = c(2, 4),               # ✅ 2 niveles en lugar de 3
-  colsample_bytree = c(0.7),     # ✅ 1 valor óptimo
-  min_child_weight = c(8, 12),   # ✅ Mantenemos
-  subsample = c(0.75)            # ✅ 1 valor óptimo
-)
-# 3×2×2×2×1×2×1 = 48 combinaciones (vs 96 original)
-# 48 × 7 folds = 336 modelos (vs 1,920 original) = 82% MENOS TIEMPO
-# 3. ENTRENAR MODELO COMPETITIVO
-set.seed(2025)
-model_competitive <- train(
-  Pobre ~ .,
-  data = train,
-  method = "xgbTree",
-  trControl = ctrl_competitive,
-  tuneGrid = grid_competitive,
-  metric = "ROC",
-  verbose = FALSE
-)
-
-# 4. SELECCIÓN DE VARIABLES
-var_importance <- varImp(model_competitive)$importance
-top_variables <- rownames(var_importance)[order(-var_importance$Overall)][1:15]
-cat("Top 15 variables del Modelo 1:\n")
-print(top_variables)
-
-# 5. REENTRENAR CON VARIABLES SELECCIONADAS
-train_reduced <- train %>% select(Pobre, all_of(top_variables))
-
-set.seed(2025)
-model_final_reduced <- train(
-  Pobre ~ .,
-  data = train_reduced,
-  method = "xgbTree",
-  trControl = ctrl_competitive,
-  tuneGrid = grid_competitive,
-  metric = "ROC",
-  verbose = FALSE
-)
-
-# 6. VERSIÓN A: THRESHOLD OPTIMIZADO
-# Optimizar threshold en validation
-set.seed(2025)
-train_indices <- createDataPartition(train_reduced$Pobre, p = 0.8, list = FALSE)
-train_train <- train_reduced[train_indices, ]
-train_val <- train_reduced[-train_indices, ]
-
-model_val <- train(
-  Pobre ~ .,
-  data = train_train,
-  method = "xgbTree",
-  trControl = trainControl(method = "cv", number = 5, classProbs = TRUE),
-  tuneGrid = model_final_reduced$bestTune,
-  verbose = FALSE
-)
-
-prob_val <- predict(model_val, train_val, type = "prob")$Pobre
-thresholds <- seq(0.1, 0.5, by = 0.01)
-f1_scores <- sapply(thresholds, function(th) {
-  preds <- ifelse(prob_val > th, "Pobre", "NoPobre")
-  preds <- factor(preds, levels = c("NoPobre", "Pobre"))
-  cm <- confusionMatrix(preds, train_val$Pobre)
-  f1 <- 2 * (cm$byClass["Precision"] * cm$byClass["Recall"]) / 
-    (cm$byClass["Precision"] + cm$byClass["Recall"])
-  return(ifelse(is.na(f1), 0, f1))
-})
-
-best_threshold <- thresholds[which.max(f1_scores)]
-cat("Modelo 1 - Mejor threshold:", best_threshold, "| F1:", max(f1_scores, na.rm = TRUE), "\n")
-
-# Predecir con threshold optimizado
-test_reduced <- test %>% select(all_of(top_variables))
-prob_test <- predict(model_final_reduced, test_reduced, type = "prob")
-pred_test_optimal <- ifelse(prob_test$Pobre > best_threshold, "Pobre", "NoPobre")
-
-# Submission threshold optimizado
-submission_1_optimal <- data.frame(
-  id = test$id,
-  poverty = as.numeric(pred_test_optimal == "Pobre")
-)
-write.csv(submission_1_optimal, 
-          "C:/Users/Marlon Angulo/Downloads/M1_competitive_optimal.csv", 
-          row.names = FALSE)
-
-
-
-# 6. VERSIÓN A: THRESHOLD OPTIMIZADO
-# Obtener los mejores parámetros del modelo
-best_params_1 <- model_final_reduced$bestTune
-
-# Submission threshold optimizado - NOMBRE CONVENCIONAL
-nombre_1_optimal <- paste0(
-  "XGB",
-  "_nrounds_", best_params_1$nrounds,
-  "_maxdepth_", best_params_1$max_depth,
-  "_eta_", best_params_1$eta,
-  "_gamma_", best_params_1$gamma,
-  "_colsample_", best_params_1$colsample_bytree,
-  "_minchild_", best_params_1$min_child_weight,
-  "_subsample_", best_params_1$subsample,
-  "_th_", round(best_threshold, 3),
-  ".csv"
-)
-
-submission_1_optimal <- data.frame(
-  id = test$id,
-  poverty = as.numeric(pred_test_optimal == "Pobre")
-)
-write.csv(submission_1_optimal, 
-          file.path("C:/Users/Marlon Angulo/Downloads", nombre_1_optimal), 
-          row.names = FALSE)
-
-
-# 7. VERSIÓN B: THRESHOLD 0.3
-pred_test_03 <- ifelse(prob_test$Pobre > 0.3, "Pobre", "NoPobre")
-
-submission_1_03 <- data.frame(
-  id = test$id,
-  poverty = as.numeric(pred_test_03 == "Pobre")
-)
-write.csv(submission_1_03, 
-          "C:/Users/Marlon Angulo/Downloads/M1_competitive_th03.csv", 
-          row.names = FALSE)
-
-cat("✅ MODELO 1 COMPLETADO - 2 submissions guardados\n")
-cat("   📁 M1_competitive_optimal.csv (threshold", round(best_threshold, 3), ")\n")
-cat("   📁 M1_competitive_th03.csv (threshold 0.3)\n")
-
-
-# MODELO 1: COMPETITIVO REGULARIZADO
-
-# ... (todo el código igual hasta la parte de submissions)
-
-# 7. VERSIÓN B: THRESHOLD 0.3
-nombre_1_03 <- paste0(
-  "XGB",
-  "_nrounds_", best_params_1$nrounds,
-  "_maxdepth_", best_params_1$max_depth, 
-  "_eta_", best_params_1$eta,
-  "_gamma_", best_params_1$gamma,
-  "_colsample_", best_params_1$colsample_bytree,
-  "_minchild_", best_params_1$min_child_weight,
-  "_subsample_", best_params_1$subsample,
-  "_th_03.csv"
-)
-
-submission_1_03 <- data.frame(
-  id = test$id,
-  poverty = as.numeric(pred_test_03 == "Pobre")
-)
-write.csv(submission_1_03, 
-          file.path("C:/Users/Marlon Angulo/Downloads", nombre_1_03), 
-          row.names = FALSE)
-
-cat("✅ MODELO 1 COMPLETADO - 2 submissions guardados\n")
-cat("   📁", nombre_1_optimal, "\n")
-cat("   📁", nombre_1_03, "\n")
+# 2. HACER LO MISMO PARA TEST
+test_personas_enriched <- test_personas |> 
+  group_by(id) |>
+  summarize(
+    edad_promedio = mean(Edad, na.rm = TRUE),
+    edad_maxima = max(Edad, na.rm = TRUE),
+    edad_minima = min(Edad, na.rm = TRUE),
+    rango_edad = max(Edad, na.rm = TRUE) - min(Edad, na.rm = TRUE),
+    total_horas_trabajo = sum(Hras_sem_trab, na.rm = TRUE),
+    horas_promedio_trabajo = mean(Hras_sem_trab, na.rm = TRUE),
+    num_trabajadores_tiempo_completo = sum(Hras_sem_trab >= 40, na.rm = TRUE),
+    num_trabajadores_medio_tiempo = sum(Hras_sem_trab >= 20 & Hras_sem_trab < 40, na.rm = TRUE),
+    num_empleados_formales = sum(Pos_tra_pri == 3 & Cot_pension == 1, na.rm = TRUE),
+    num_empleados_informales = sum(Pos_tra_pri == 3 & Cot_pension == 0, na.rm = TRUE),
+    num_independientes = sum(Pos_tra_pri == 4, na.rm = TRUE),
+    num_patrones = sum(Pos_tra_pri == 1, na.rm = TRUE),
+    num_trabajadores_domesticos = sum(Pos_tra_pri == 5, na.rm = TRUE),
+    promedio_educacion = mean(Nivel_educ, na.rm = TRUE),
+    max_educacion = max(Nivel_educ, na.rm = TRUE),
+    num_sin_educacion = sum(Nivel_educ == 0, na.rm = TRUE),
+    num_educacion_basica = sum(Nivel_educ %in% c(1, 2, 3), na.rm = TRUE),
+    num_educacion_media = sum(Nivel_educ %in% c(4, 5), na.rm = TRUE),
+    num_educacion_superior = sum(Nivel_educ %in% c(6, 7, 8, 9), na.rm = TRUE),
+    num_salud_subsidiado = sum(Régimen_SS_salud == 2, na.rm = TRUE),
+    num_salud_contributivo = sum(Régimen_SS_salud == 1, na.rm = TRUE),
+    num_salud_especial = sum(Régimen_SS_salud == 3, na.rm = TRUE),
+    num_sin_salud = sum(is.na(Régimen_SS_salud) | Régimen_SS_salud == 0, na.rm = TRUE),
+    num_buscando_trabajo = sum(Des == 1, na.rm = TRUE),
+    num_disponibles_trabajar = sum(Disp_mas_horas == 1, na.rm = TRUE),
+    num_quieren_mas_horas = sum(Quiere_mas_horas == 1, na.rm = TRUE),
+    num_recibe_subsidio_transporte = sum(Sub_Trans == 1, na.rm = TRUE),
+    num_recibe_subsidio_familiar = sum(Sub_Fam == 1, na.rm = TRUE),
+    num_recibe_subsidio_educativo = sum(Sub_Edu == 1, na.rm = TRUE),
+    num_ingreso_horas_extra = sum(Ing_HE > 0, na.rm = TRUE),
+    num_ingreso_bonificaciones = sum(Ing_Bon > 0, na.rm = TRUE),
+    num_ingreso_primas = sum(Ing_Pr > 0, na.rm = TRUE),
+    promedio_tiempo_empresa = mean(T_Tra_Emp, na.rm = TRUE),
+    max_tiempo_empresa = max(T_Tra_Emp, na.rm = TRUE),
+    num_empleados_estables = sum(T_Tra_Emp > 12, na.rm = TRUE),
+    num_empresas_grandes = sum(Tam_empresa %in% c(4, 5), na.rm = TRUE),
+    num_empresas_pequenas = sum(Tam_empresa %in% c(1, 2), na.rm = TRUE),
+    num_agricultura = sum(Act_principal_SP == 1, na.rm = TRUE),
+    num_industria = sum(Act_principal_SP == 2, na.rm = TRUE),
+    num_servicios = sum(Act_principal_SP %in% c(3, 4, 5, 6), na.rm = TRUE),
+    edad_jefe_hogar = first(Edad[Jefe_hogar == 1]),
+    educacion_jefe = first(Nivel_educ[Jefe_hogar == 1]),
+    sexo_jefe = first(Sexo[Jefe_hogar == 1]),
+    ocupacion_jefe = first(Oc[Jefe_hogar == 1])
+  ) |>
+  ungroup()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#Modelo optmizado con advanced featuring===========
-
-# MODELO 2: HÍBRIDO (FEATURE ENGINEERING + ANTI-OVERFITTING)
-
-cat("🚀 INICIANDO MODELO 2: Híbrido con Feature Engineering\n")
-
-# 1. FEATURE ENGINEERING (tu versión original)
-train_hybrid <- train %>%
+train_with_id <- train_hogares |> 
+  left_join(TR_personas_nivel_hogar) |>
   mutate(
-    dependency_ratio = (num_minors + num_inactivos) / (num_occupied + 0.1),
-    financial_inclusion = num_cotizantes / (Nper + 0.1),
-    vulnerability_employment = vulnerability_index * (1 - prop_ocupados),
-    pobreza_multidimensional = vulnerability_index * dependency_ratio * (1 - financial_inclusion)
+    # PROPORCIONES EXISTENTES:
+    prop_inactivos = num_inactivos / Nper,
+    prop_cotizantes = num_cotizantes / Nper,
+    prop_ocupados = num_occupied / Nper,
+    
+    # NUEVA VARIABLE AVANZADA:
+    vulnerability_index = (
+      (1 - prop_ocupados) +           # Desempleo
+        (num_minors / Nper) +           # Carga de menores  
+        (1 - prop_cotizantes) +         # Exclusión financiera
+        (1 / (prop_cuartos + 0.1))      # Hacinamiento inverso
+    ) / 4,                             # Normalizar 0-1
+    
+    Pobre = factor(ifelse(Pobre == 1, "Pobre", "NoPobre"), 
+                   levels = c("NoPobre", "Pobre"))
   )
 
-test_hybrid <- test %>%
+
+
+
+# 3. COMBINAR CON LOS DATOS EXISTENTES
+train_enriched <- train_with_id |> 
+  left_join(train_personas_enriched, by = "id")
+
+test_enriched <- test |> 
+  left_join(test_personas_enriched, by = "id")
+
+# Reemplazar NAs con 0 en estas variables
+train_enriched_clean <- train_enriched %>%
   mutate(
-    dependency_ratio = (num_minors + num_inactivos) / (num_occupied + 0.1),
-    financial_inclusion = num_cotizantes / (Nper + 0.1),
-    vulnerability_employment = vulnerability_index * (1 - prop_ocupados),
-    pobreza_multidimensional = vulnerability_index * dependency_ratio * (1 - financial_inclusion)
+    horas_promedio_trabajo = ifelse(is.na(horas_promedio_trabajo), 0, horas_promedio_trabajo),
+    promedio_tiempo_empresa = ifelse(is.na(promedio_tiempo_empresa), 0, promedio_tiempo_empresa)
   )
 
-# MODELO 2: HÍBRIDO (VERSIÓN RÁPIDA)
+# Aplicar misma transformación a test
+test_enriched_clean <- test_enriched %>%
+  mutate(
+    horas_promedio_trabajo = ifelse(is.na(horas_promedio_trabajo), 0, horas_promedio_trabajo),
+    promedio_tiempo_empresa = ifelse(is.na(promedio_tiempo_empresa), 0, promedio_tiempo_empresa)
+  )
 
-cat("🚀 INICIANDO MODELO 2: Híbrido - VERSIÓN RÁPIDA\n")
+train_enriched_final <- train_enriched_clean %>%
+  mutate(max_tiempo_empresa = ifelse(is.infinite(max_tiempo_empresa), 0, max_tiempo_empresa))
+test_enriched_final <- test_enriched_clean %>%
+  mutate(max_tiempo_empresa = ifelse(is.infinite(max_tiempo_empresa), 0, max_tiempo_empresa))
 
-# 1. CONFIGURACIÓN OPTIMIZADA (igual que Modelo 1)
-ctrl_hybrid <- trainControl(
-  method = "cv",
-  number = 7,
-  classProbs = TRUE,
-  summaryFunction = twoClassSummary,
-  verboseIter = TRUE,
-  savePredictions = "final"
-)
 
-# 2. GRID OPTIMIZADO para modelo híbrido
-grid_hybrid <- expand.grid(
-  nrounds = c(100, 150, 200),
-  max_depth = c(4, 5),           # ✅ Un poco más profundo para features complejos
-  eta = c(0.05, 0.1),
-  gamma = c(1, 3),               # ✅ Menos regularización que Modelo 1
-  colsample_bytree = c(0.8),     # ✅ Más variables para features complejos
-  min_child_weight = c(3, 6),    # ✅ Menos restrictivo que Modelo 1
-  subsample = c(0.8)             # ✅ Más datos para features complejos
-)
-# 3×2×2×2×1×2×1 = 48 combinaciones también
+# Verificar que no hay NAs
+sum(is.na(train_enriched_clean))
 
-# 4. ENTRENAR MODELO HÍBRIDO
+
+
+
+# VERSIÓN MEJORADA CON ANTI-OVERFITTING
 set.seed(2025)
-model_hybrid <- train(
+model_enriched_improved <- train(
   Pobre ~ .,
-  data = train_hybrid,
+  data = train_enriched_final %>% select(-id),
   method = "xgbTree",
-  trControl = ctrl_hybrid,
-  tuneGrid = grid_hybrid,
-  metric = "ROC",
+  trControl = trainControl(
+    method = "cv",
+    number = 5,
+    classProbs = TRUE,
+    summaryFunction = twoClassSummary,
+    verboseIter = TRUE
+  ),
+  tuneGrid = expand.grid(
+    nrounds = 100,
+    max_depth = 6,
+    eta = 0.1,
+    gamma = 1,           # ✅ REGULARIZACIÓN AÑADIDA
+    colsample_bytree = 0.7, # ✅ MÁS CONSERVADOR
+    min_child_weight = 3,   # ✅ MÁS RESTRICTIVO  
+    subsample = 0.8
+  ),
   verbose = FALSE
 )
 
-# 5. SELECCIÓN DE VARIABLES HÍBRIDAS
-var_importance_hybrid <- varImp(model_hybrid)$importance
-top_vars_hybrid <- rownames(var_importance_hybrid)[order(-var_importance_hybrid$Overall)][1:18]
-cat("Top 18 variables del Modelo 2:\n")
-print(top_vars_hybrid)
+table(train_enriched$Pobre)
 
-# 6. REENTRENAR CON VARIABLES SELECCIONADAS
-train_hybrid_reduced <- train_hybrid %>% select(Pobre, all_of(top_vars_hybrid))
 
-set.seed(2025)
-model_final_hybrid <- train(
-  Pobre ~ .,
-  data = train_hybrid_reduced,
-  method = "xgbTree",
-  trControl = ctrl_hybrid,
-  tuneGrid = grid_hybrid,
-  metric = "ROC",
-  verbose = FALSE
+
+
+# VER RESULTADOS DEL MODELO ORIGINAL CON THRESHOLD 0.4
+prob_original <- predict(model_enriched_improved, train_enriched_final, type = "prob")$Pobre
+pred_original <- ifelse(prob_original > 0.33, "Pobre", "NoPobre")
+cm_original <- confusionMatrix(factor(pred_original, levels = c("NoPobre", "Pobre")), 
+                               train_enriched_final$Pobre)
+
+# CALCULAR F1 PARA LA CLASE "POBRE" CORRECTAMENTE
+# Para la clase "Pobre":
+TP <- cm_original$table[2, 2]  # Verdaderos positivos: Pobre predicho como Pobre
+FP <- cm_original$table[2, 1]  # Falsos positivos: NoPobre predicho como Pobre  
+FN <- cm_original$table[1, 2]  # Falsos negativos: Pobre predicho como NoPobre
+
+precision_pobre_correct <- TP / (TP + FP)
+recall_pobre_correct <- TP / (TP + FN)
+f1_pobre_correct <- 2 * (precision_pobre_correct * recall_pobre_correct) / 
+  (precision_pobre_correct + recall_pobre_correct)
+
+cat("🎯 MÉTRICAS CORRECTAS PARA CLASE 'POBRE':\n")
+cat("- True Positives (Pobre correcto):", TP, "\n")
+cat("- False Positives:", FP, "\n") 
+cat("- False Negatives:", FN, "\n")
+cat("- Precision Pobre:", round(precision_pobre_correct, 4), "\n")
+cat("- Recall Pobre:", round(recall_pobre_correct, 4), "\n")
+cat("- F1 Pobre:", round(f1_pobre_correct, 4), "\n")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#En teoría es mejor con 0.34
+prob_train <- predict(model_enriched_improved, train_enriched_final, type = "prob")$Pobre
+pred_train <- ifelse(prob_train > 0.34, "Pobre", "NoPobre")
+confusionMatrix(factor(pred_train, levels = c("NoPobre", "Pobre")), train_enriched_final$Pobre)
+
+
+# 6. PREDECIR CON THRESHOLD 0.34
+prob_test_enriched <- predict(model_enriched, test_enriched_final, type = "prob")$Pobre
+pred_test_enriched <- ifelse(prob_test_enriched > 0.34, "Pobre", "NoPobre")
+
+# 7. SUBMISSION
+submission_enriched <- data.frame(
+  id = test_enriched$id,
+  poverty = as.numeric(pred_test_enriched == "Pobre")
 )
 
-# 7. VERSIÓN A: THRESHOLD OPTIMIZADO
-set.seed(2025)
-train_indices_hybrid <- createDataPartition(train_hybrid_reduced$Pobre, p = 0.8, list = FALSE)
-train_train_hybrid <- train_hybrid_reduced[train_indices_hybrid, ]
-train_val_hybrid <- train_hybrid_reduced[-train_indices_hybrid, ]
-
-model_val_hybrid <- train(
-  Pobre ~ .,
-  data = train_train_hybrid,
-  method = "xgbTree",
-  trControl = trainControl(method = "cv", number = 5, classProbs = TRUE),
-  tuneGrid = model_final_hybrid$bestTune,
-  verbose = FALSE
-)
-
-prob_val_hybrid <- predict(model_val_hybrid, train_val_hybrid, type = "prob")$Pobre
-f1_scores_hybrid <- sapply(thresholds, function(th) {
-  preds <- ifelse(prob_val_hybrid > th, "Pobre", "NoPobre")
-  preds <- factor(preds, levels = c("NoPobre", "Pobre"))
-  cm <- confusionMatrix(preds, train_val_hybrid$Pobre)
-  f1 <- 2 * (cm$byClass["Precision"] * cm$byClass["Recall"]) / 
-    (cm$byClass["Precision"] + cm$byClass["Recall"])
-  return(ifelse(is.na(f1), 0, f1))
-})
-
-best_threshold_hybrid <- thresholds[which.max(f1_scores_hybrid)]
-cat("Modelo 2 - Mejor threshold:", best_threshold_hybrid, "| F1:", max(f1_scores_hybrid, na.rm = TRUE), "\n")
-
-# Predecir con threshold optimizado
-test_hybrid_reduced <- test_hybrid %>% select(all_of(top_vars_hybrid))
-prob_test_hybrid <- predict(model_final_hybrid, test_hybrid_reduced, type = "prob")
-pred_test_hybrid_optimal <- ifelse(prob_test_hybrid$Pobre > best_threshold_hybrid, "Pobre", "NoPobre")
-
-submission_2_optimal <- data.frame(
-  id = test$id,
-  poverty = as.numeric(pred_test_hybrid_optimal == "Pobre")
-)
-write.csv(submission_2_optimal, 
-          "C:/Users/Marlon Angulo/Downloads/M2_hybrid_optimal.csv", 
+write.csv(submission_enriched, 
+          "C:/Users/Marlon Angulo/Downloads/XGB_50plus_vars_th033.csv", 
           row.names = FALSE)
 
-# 8. VERSIÓN B: THRESHOLD 0.3
-pred_test_hybrid_03 <- ifelse(prob_test_hybrid$Pobre > 0.3, "Pobre", "NoPobre")
 
-submission_2_03 <- data.frame(
-  id = test$id,
-  poverty = as.numeric(pred_test_hybrid_03 == "Pobre")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Modelo optmizado con advanced featuring 0.71===========
+train_enriched_advanced <- train_enriched_final %>%
+  mutate(
+    # INTERACCIONES CLAVE
+    interaccion_educ_ocupacion = promedio_educacion * prop_ocupados,
+    densidad_por_educacion = Nper / (promedio_educacion + 0.1),
+    ratio_formalidad = num_empleados_formales / (num_empleados_informales + 1),
+    
+    # NUEVAS VARIABLES COMPUESTAS
+    score_empleabilidad = (prop_ocupados * 0.4) + (prop_cotizantes * 0.3) + 
+      (num_educacion_superior / Nper * 0.3),
+    
+    indice_vulnerabilidad_mejorado = (
+      (1 - prop_ocupados) * 0.3 +           # Desempleo
+        (num_minors / Nper) * 0.2 +           # Dependencia
+        (1 - prop_cotizantes) * 0.25 +        # Informalidad
+        (1 / (prop_cuartos + 0.1)) * 0.15 +   # Hacinamiento
+        (1 - (num_educacion_superior / Nper)) * 0.1  # Educación baja
+    ),
+    
+    # VARIABLES DE COMPOSICIÓN FAMILIAR MEJORADAS
+    prop_menores = num_minors / Nper,
+    prop_adultos_mayores = ifelse(edad_maxima > 60, 1, 0),
+    diversidad_ocupacional = num_empleados_formales + num_independientes + num_trabajadores_domesticos,
+    
+    # INDICADORES DE ESTABILIDAD
+    estabilidad_laboral = num_empleados_estables / (num_occupied + 1),  # Corregido
+    variabilidad_ingresos = (num_ingreso_horas_extra + num_ingreso_bonificaciones) / Nper
+  )
+
+# Aplicar a test
+test_enriched_advanced <- test_enriched_final %>%
+  mutate(
+    interaccion_educ_ocupacion = promedio_educacion * prop_ocupados,
+    densidad_por_educacion = Nper / (promedio_educacion + 0.1),
+    ratio_formalidad = num_empleados_formales / (num_empleados_informales + 1),
+    score_empleabilidad = (prop_ocupados * 0.4) + (prop_cotizantes * 0.3) + 
+      (num_educacion_superior / Nper * 0.3),
+    indice_vulnerabilidad_mejorado = (
+      (1 - prop_ocupados) * 0.3 + (num_minors / Nper) * 0.2 + 
+        (1 - prop_cotizantes) * 0.25 + (1 / (prop_cuartos + 0.1)) * 0.15 + 
+        (1 - (num_educacion_superior / Nper)) * 0.1
+    ),
+    prop_menores = num_minors / Nper,
+    prop_adultos_mayores = ifelse(edad_maxima > 60, 1, 0),
+    diversidad_ocupacional = num_empleados_formales + num_independientes + num_trabajadores_domesticos,
+    estabilidad_laboral = num_empleados_estables / (num_occupied + 1),
+    variabilidad_ingresos = (num_ingreso_horas_extra + num_ingreso_bonificaciones) / Nper
+  )
+
+# Continuar con el modelo...
+
+
+# Modelo con mejor feature engineering
+set.seed(2025)
+model_advanced <- train(
+  Pobre ~ .,
+  data = train_enriched_advanced %>% select(-id),
+  method = "xgbTree",
+  trControl = trainControl(
+    method = "cv",
+    number = 5,
+    classProbs = TRUE,
+    summaryFunction = twoClassSummary,
+    verboseIter = TRUE
+  ),
+  tuneGrid = expand.grid(
+    nrounds = 100,
+    max_depth = 6,
+    eta = 0.1,
+    gamma = 1,
+    colsample_bytree = 0.7,
+    min_child_weight = 3,
+    subsample = 0.8
+  ),
+  verbose = FALSE
 )
-write.csv(submission_2_03, 
-          "C:/Users/Marlon Angulo/Downloads/M2_hybrid_th03.csv", 
-          row.names = FALSE)
 
-cat("✅ MODELO 2 COMPLETADO - 2 submissions guardados\n")
-cat("   📁 M2_hybrid_optimal.csv (threshold", round(best_threshold_hybrid, 3), ")\n")
-cat("   📁 M2_hybrid_th03.csv (threshold 0.3)\n")
+# Evaluar
+prob_advanced <- predict(model_advanced, train_enriched_advanced, type = "prob")$Pobre
+
+# Encontrar mejor threshold para el nuevo modelo
+thresholds <- seq(0.01, 0.5, 0.01)
+f1_scores_advanced <- numeric(length(thresholds))
+
+for(i in seq_along(thresholds)) {
+  pred <- ifelse(prob_advanced > thresholds[i], "Pobre", "NoPobre")
+  pred <- factor(pred, levels = c("NoPobre", "Pobre"))
+  cm <- confusionMatrix(pred, train_enriched_advanced$Pobre)
+  
+  TP <- cm$table[2, 2]
+  FP <- cm$table[2, 1]  
+  FN <- cm$table[1, 2]
+  
+  precision <- TP / (TP + FP)
+  recall <- TP / (TP + FN)
+  f1_scores_advanced[i] <- 2 * (precision * recall) / (precision + recall)
+}
+
+best_threshold_advanced <- thresholds[which.max(f1_scores_advanced)]
+best_f1_advanced <- max(f1_scores_advanced)
+
+cat("🎯 RESULTADOS CON MEJOR FEATURE ENGINEERING:\n")
+cat("- Mejor threshold:", best_threshold_advanced, "\n")
+cat("- Mejor F1:", round(best_f1_advanced, 4), "\n")
+cat("- Mejora vs anterior:", round(best_f1_advanced - 0.7083, 4), "\n")
